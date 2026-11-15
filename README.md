@@ -14,3 +14,6 @@ Reports, Settings and Admin are admin-only. Payments can be verified only by Fin
 ## Phase 3: Woosh email
 1. Run supabase/schema3.sql once. 2. Add WOOSH_WEBHOOK_SECRET (any random 32+ character string) to .env.local and to your host's environment variables, then redeploy.
 3. In Settings, "Woosh email updates" starts on "Review first". 4. Install woosh-gmail-script.gs in the Woosh Gmail (see the chat steps).
+
+## Phase 4: Per-person access
+Run supabase/schema4.sql once. Then in Admin, open "Access" on any team member and tick what they can see and do. Admins always have full access.
