@@ -1,0 +1,5 @@
+import{createClient}from"@supabase/supabase-js";import{STAGES,bdt}from"@/lib/quote";import{paid}from"@/lib/ops";
+export const dynamic="force-dynamic";export const metadata={robots:"noindex"};
+export default async function T({params}){const{id,token}=await params,a=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}}),{data:o}=await a.from("orders").select("id,status,cancelled,data").eq("id",id).maybeSingle();
+const ok=o&&o.data.token&&o.data.token===token&&o.data.exp*1e3>Date.now();
+return<div style={{maxWidth:520,margin:"40px auto",padding:16}}><div className="card">{!ok?<><h3>This link is not valid</h3><p className="mute">It may have expired. Please ask Memo for a new one.</p></>:<><h1>Order {o.id}</h1><p>{o.data.p.brand} – {o.data.p.name}</p>{STAGES.slice(3,9).map((s,i)=><div key={s} style={{opacity:i+3<=o.status?1:.45}}>{i+3<=o.status?"●":"○"} {s}</div>)}{o.cancelled&&<p className="err">This order was cancelled.</p>}<p><b>Balance due: {bdt(Math.max(0,o.data.q.total-paid(o)))}</b></p></>}</div></div>}

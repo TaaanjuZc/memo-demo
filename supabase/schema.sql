@@ -1,0 +1,14 @@
+create table profiles(id uuid primary key references auth.users on delete cascade,name text not null,role text not null check(role in('admin','operations','finance')),active bool not null default true,created_at timestamptz default now());
+create table orders(id text primary key default 'M'||upper(substr(md5(random()::text),1,6)),status int not null default 2,cancelled bool not null default false,data jsonb not null,created_by uuid references auth.users,created_at timestamptz default now(),updated_at timestamptz default now());
+create table audit_log(id bigserial primary key,order_id text,actor uuid default auth.uid(),actor_name text,action text,at timestamptz default now());
+create function is_staff() returns bool language sql security definer stable set search_path=public as $$select exists(select 1 from profiles where id=auth.uid() and active)$$;
+create function is_admin() returns bool language sql security definer stable set search_path=public as $$select exists(select 1 from profiles where id=auth.uid() and active and role='admin')$$;
+alter table profiles enable row level security;alter table orders enable row level security;alter table audit_log enable row level security;
+create policy p_sel on profiles for select using(id=auth.uid() or is_admin());
+create policy p_all on profiles for all using(is_admin()) with check(is_admin());
+create policy o_sel on orders for select using(is_staff());
+create policy o_ins on orders for insert with check(is_staff());
+create policy o_upd on orders for update using(is_staff());
+create policy o_del on orders for delete using(is_admin());
+create policy a_sel on audit_log for select using(is_staff());
+create policy a_ins on audit_log for insert with check(is_staff());
